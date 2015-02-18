@@ -29,9 +29,11 @@ logfile=${logfile:-/var/log/mail}
 
 tmpfile=$(mktemp /tmp/.simtrans.XXXXXXXX)
 grep="fgrep"
+cat="cat"
 
 if { echo $logfile | grep -q "gz$"; }; then
     grep="zfgrep"
+    cat="zcat"
 fi
 
 for pattern in "$@" ; do
