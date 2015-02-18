@@ -27,28 +27,28 @@ logfile=${logfile:-/var/log/mail}
 #
 # simta[7642.1293473885]: Connect.stat
 
-tmpfile=`mktemp /tmp/.simtrans.XXXXX`
-cat=/bin/cat
+tmpfile=$(mktemp /tmp/.simtrans.XXXXXXXX)
+grep="fgrep"
 
 if { echo $logfile | grep -q "gz$"; }; then
-	cat=/bin/zcat
+    grep="zfgrep"
 fi
 
 for pattern in "$@" ; do
-	$cat $logfile | awk -v p="$pattern" '
-		( $0 ~ p ) && ( $5 ~ /^simta\[.*\]:$/ ) &&
-		( $6 " " $7 !~ /Child (Start|Exited)/ ) &&
-		( $6  !~ /Connect\.stat/ ) {
-			t=$5;
-			gsub(/simta\[|\]:/, "", t);
-			tid[t]++;
-		}
-		END {
-			for ( t in tid ) print t;
-		}' 
+    $cat $logfile | awk -v p="$pattern" '
+	( $0 ~ p ) && ( $5 ~ /^simta\[.*\]:$/ ) &&
+	( $6 " " $7 !~ /Child (Start|Exited)/ ) &&
+	( $6  !~ /Connect\.stat/ ) {
+	    t=$5;
+	    gsub(/simta\[|\]:/, "", t);
+	    tid[t]++;
+	}
+	END {
+	    for ( t in tid ) print t;
+	}'
 done >| $tmpfile
 
-$cat $logfile | fgrep -f $tmpfile
+$grep -f $tmpfile $logfile
 rm -f $tmpfile
 
 ## Instead of a straight fgrep, we might want consider

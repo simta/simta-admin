@@ -1,6 +1,0 @@
-echo 'Top subnets:' 
-grep "Received: FROM" /var/spool/simta/slow/D* | grep -v umich.edu | awk '{print $5}' | tr -d '[])' | cut -d. -f1-3 | sort -n | uniq -c | sort -rn | head -10
-
-echo
-echo 'Top IPs:'
-grep "Received: FROM" /var/spool/simta/slow/D* | grep -v umich.edu | awk '{print $5}' | tr -d '[])' | sort -n | uniq -c | sort -rn | head -10

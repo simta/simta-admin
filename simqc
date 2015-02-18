@@ -14,8 +14,10 @@ name=simqc
 stats=$(mktemp -d /tmp/simtacount.XXXXXXXX)
 tmpfile=$(mktemp /tmp/${name}.XXXXXXXX)
 simtadir=/var/spool/simta
+ignore=umich.edu
 slow_opt=0
 fast_opt=0
+ip_opt=0
 head_opt=10
 day_opt=0
 time_opt=0
@@ -33,7 +35,7 @@ error() {
 
 checkq(){
     queue=$1
-    find $simtadir/$queue -type f -name E\* -maxdepth 1 -ignore_readdir_race > $stats/$queue.list
+    find $simtadir/$queue -maxdepth 1 -ignore_readdir_race -name E\* -type f > $stats/$queue.list
     cat $stats/$queue.list | xargs grep -s -h ^R | sort | uniq -c | sort -rn > $stats/$queue.sortedrecip
     echo "Top $queue recipients"
     head -n $head_opt $stats/$queue.sortedrecip
@@ -46,6 +48,17 @@ checkq(){
     echo "Top $queue senders"
     head -n $head_opt $stats/$queue.sortedfrom
     echo ""
+    if [[ $ip_opt -eq 1 ]]; then
+        sed 's/E/D/' $stats/$queue.list | xargs -r fgrep "Received: FROM" | grep -v "$ignore" | awk '{print $5}' | tr -d '[])' > $stats/$queue.ips
+        sort -n $stats/$queue.ips | uniq -c | sort -rn > $stats/$queue.sortedips
+        echo "Top $queue non-$ignore IPs"
+        head -n $head_opt $stats/$queue.sortedips
+        echo ""
+        cut -d. -f1-3 $stats/$queue.ips | sort -n | uniq -c | sort -rn > $stats/queue.sortedsubnets
+        echo "Top $queue non-$ignore subnets"
+        head -n $head_opt $stats/queue.sortedsubnets
+        echo ""
+    fi
 }
 
 findnewest() {
@@ -63,7 +76,7 @@ findnewest() {
 qstats() {
 minutes=$1
 if [[ -d $simtadir/etc ]]; then
-    for x in $(find $simtadir/etc -type f -name queue_schedule.\* -mmin -${minutes}); do
+    for x in $(find $simtadir/etc -ignore_readdir_race -name queue_schedule.\* -type f -mmin -${minutes}); do
         awk -v f=$x '{ s += $2 } END { print f,s }' $x
     done | sort -n -k 2 > $tmpfile
     adqavg=$(awk '{ s += $2 } END { print s/NR }' $tmpfile)
@@ -80,12 +93,14 @@ fi
 }
 
 
-while getopts sfh:dt:n opt; do
+while getopts sfih:dt:n opt; do
     case $opt in
     s)  slow_opt=1
 	;;
     f)	fast_opt=1
 	;;
+    i)  ip_opt=1
+        ;;
     h)	head_opt="$OPTARG"
 	;;
     d)	day_opt=1

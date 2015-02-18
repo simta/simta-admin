@@ -1,14 +1,15 @@
 #!/bin/bash
 
-export PATH=/bin:/usr/bin:/sbin:/usr/sbin:/usr/rsug/bin
+simtadir=/var/spool/simta
 
-name=simtamaint
-confdir=/etc/sysconfig/nag
+if [[ -d $simtadir/etc ]]; then
+    # Clean up old files
+    find $simtadir/etc -ignore_readdir_race -type f -mtime +7 -delete
 
-if [ -d /var/spool/simta/etc ]; then
-    day=`date -d yesterday +%a`
-    cd /var/spool/simta/etc
-    rm -rf $day &>/dev/null
-    mkdir $day
-    find . -maxdepth 1 -type f -exec mv {} $day \;
+    # Archive new files
+    for statfile in $(find $simtadir/etc -ignore_readdir_race -maxdepth 1 -name \*.\* -type f) ; do
+        day=$(date -r $statfile +%a)
+        mkdir -p $simtadir/etc/$day
+        mv $statfile $simtadir/etc/$day
+    done
 fi

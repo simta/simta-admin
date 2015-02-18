@@ -1,4 +1,4 @@
 #!/bin/bash
 
 simtadir=/var/spool/simta
-find $simtadir/slow $simtadir/fast -maxdepth 1 -type f -name D\* | xargs -r grep -sl "$1" | xargs -r cat
+find $simtadir/slow $simtadir/fast -maxdepth 1 -ignore_readdir_race -name D\* -type f | xargs -r grep -sl "$1" | xargs -r cat
