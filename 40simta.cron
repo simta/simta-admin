@@ -1,0 +1,4 @@
+# simta admin tasks
+10 00 * * * root    /usr/sbin/simtamaint
+*/5 * * * * root    /usr/sbin/simc -q &>/dev/null
+5,15,25,35,45,55 * * * * root   netstat -na | awk '$4 ~ /\:465$|\:587$|\:25$/ { print $6 }' | sort | uniq -c | sort -rn | while read count type; do echo -n "$type: $count "; done | logger -p mail.info -t smtp_ports
