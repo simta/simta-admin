@@ -1,3 +1,4 @@
 #!/bin/bash
 
-grep -sl "$1" /var/spool/simta/slow/D* /var/spool/simta/fast/D* | xargs -r cat
+simtadir=/var/spool/simta
+find $simtadir/slow $simtadir/fast -maxdepth 1 -type f -name D\* | xargs -r grep -sl "$1" | xargs -r cat
