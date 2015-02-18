@@ -1,0 +1,75 @@
+#!/bin/bash
+
+# simqclean
+#
+#	Given a uniqname, remove all pending messages sent by that
+#	uniqname from the simta queues on the localhost.  Removed
+#	messages are archived under /var/tmp for later analysis.
+
+
+timestamp=`date +%F-%T`
+pre=/var/tmp/simqclean
+
+usage() {
+	echo "Usage: $0 <uniqname> [ <uniqname> ... ]"
+	echo "       $0 -s <string> "
+	exit 1
+}
+
+if [ "$#" = 0 ] || [ x$1 = x-h ]; then
+	usage
+fi
+
+if [ x$1 = x-s ]; then
+	unsafe="true"
+	shift
+fi
+
+if ! [ "$unsafe" ]; then
+	for uniqname in "$@" ; do
+		if ! { echo $uniqname | egrep -q '[a-z]{3,8}'; } then
+			echo -n "'$uniqname' is not a uniqname, "
+			echo "must be 3-8 alpha chars"
+			usage
+		fi
+	done
+fi
+
+rndc flush
+
+state=started
+for p in "$@" ; do
+	if [ "$unsafe" ]; then
+		echo "Removing messages containing $p"
+		pattern=$p
+	else
+		echo "Removing messages from $p"
+		pattern="^((X-Originating-User:)|([[:space:]]Authuser)) $p;?$"
+	fi
+
+	savedir=${pre}/${p}/${timestamp}
+
+	if ! [ -d "${savedir}" ]; then
+    		mkdir -p "${savedir}" || exit 1
+	fi
+
+	for q in slow fast; do
+		cd /var/spool/simta/$q
+		if egrep -ql "$pattern" D* &>/dev/null; then
+			if [[ $q = 'fast' ]]; then
+				echo "Stopping simta..."
+				/etc/init.d/simta stop
+				state=stopped
+			fi
+			egrep -l "$pattern" D* | sed -e 'p; s/^D/E/;' | \
+				xargs -r -I spam mv spam "${savedir}"
+		fi
+	done
+done
+
+if [[ $state = 'stopped' ]]; then
+	sleep 4
+	echo "Starting simta..."
+	/etc/init.d/simta start
+fi
+

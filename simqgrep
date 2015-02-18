@@ -1,0 +1,3 @@
+#!/bin/bash
+
+grep -sl "$1" /var/spool/simta/slow/D* /var/spool/simta/fast/D* | xargs -r cat

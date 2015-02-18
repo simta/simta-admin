@@ -1,0 +1,120 @@
+#!/bin/bash
+# simqc: does queue tricks, plays the fight song
+#
+# -s : prints out stats on slow queue
+# -f : prints out stats on fast queue
+# -# : sets number to be used by head in -s and -f, default is 10
+# -d : prints out queue stats for last days ( equiv to -t 24 )
+# -t hours : prints out queue stats for last [hours] hours
+# -n : prints out the name of the newest queue file in simta/etc
+
+export PATH=/bin:/usr/bin:/sbin:/usr/sbin:/usr/local/sbin:/usr/rsug/bin
+
+name=simqc
+stats=$(mktemp -d /tmp/simtacount.XXXXXXXX)
+tmpfile=$(mktemp /tmp/${name}.XXXXXXXX)
+simtadir=/var/spool/simta
+slow_opt=0
+fast_opt=0
+head_opt=10
+day_opt=0
+time_opt=0
+newest_opt=0
+
+usage() {
+    echo "Usage: $name [-sf] [-h num] [-d] [ -t hours ] | [-n]"
+    exit 1
+}
+
+error() {
+    echo $* 1>&2
+    exit 1
+}
+
+checkq(){
+    queue=$1
+    find $simtadir/$queue -type f -name E\* -maxdepth 1 -ignore_readdir_race > $stats/$queue.list
+    cat $stats/$queue.list | xargs grep -s -h ^R | sort | uniq -c | sort -rn > $stats/$queue.sortedrecip
+    echo "Top $queue recipients"
+    head -n $head_opt $stats/$queue.sortedrecip
+    echo ""
+    cat $stats/$queue.list | xargs grep -s -h ^H | sort | uniq -c | sort -rn > $stats/$queue.sortedhosts
+    echo "Top $queue hosts"
+    head -n $head_opt $stats/$queue.sortedhosts
+    echo ""
+    cat $stats/$queue.list | xargs cat 2>/dev/null | grep -h ^F  | sort | uniq -c | sort -rn > $stats/$queue.sortedfrom
+    echo "Top $queue senders"
+    head -n $head_opt $stats/$queue.sortedfrom
+    echo ""
+}
+
+findnewest() {
+    if [[ -f $simtadir/etc/queue_stats ]]; then
+	if [[ $(stat -c %Y $simtadir/etc/queue_stats) -lt $(( $(date +%s) - 1800)) ]]; then
+	    error $simtadir/etc/queue_stats is too old
+        else
+            echo $simtadir/etc/queue_stats
+	fi
+    else
+	error $simtadir/etc/queue_stats does not exist
+    fi
+}
+
+qstats() {
+minutes=$1
+if [[ -d $simtadir/etc ]]; then
+    for x in $(find $simtadir/etc -type f -name queue_schedule.\* -mmin -${minutes}); do
+        awk -v f=$x '{ s += $2 } END { print f,s }' $x
+    done | sort -n -k 2 > $tmpfile
+    adqavg=$(awk '{ s += $2 } END { print s/NR }' $tmpfile)
+    adqmin=$(awk 'NR==1 { print $2 }' $tmpfile)
+    adqmax=$(awk 'END { print $2 }' $tmpfile)
+    admed=$(( $(awk 'END { print NR }' $tmpfile) / 2 ))
+    adqmed=$(awk -v m=$admed 'NR==m { print $2 }' $tmpfile)
+    
+    echo -e "$(( $minutes / 60 )) hour total queue stats" 
+    echo -e "max: $adqmax  min: $adqmin  avg: $adqavg  med: $adqmed"
+else
+    error $simtadir/etc does not exist
+fi
+}
+
+
+while getopts sfh:dt:n opt; do
+    case $opt in
+    s)  slow_opt=1
+	;;
+    f)	fast_opt=1
+	;;
+    h)	head_opt="$OPTARG"
+	;;
+    d)	day_opt=1
+	;;
+    t)	time_opt="$OPTARG"
+	;;
+    n)	newest_opt=1
+	findnewest
+	exit 0
+	;;
+    *)  usage
+	;;
+    esac
+done
+
+if [[ $# -eq 0  ]] || [[ $slow_opt -eq 1 || $fast_opt -eq 1 ]]; then
+    if [[ $slow_opt -eq 1 ]]; then
+	checkq slow
+    fi
+    if [[ $fast_opt -eq 1 ]]; then
+	checkq fast
+    fi 
+    echo full stats in $stats
+fi
+
+if [[ $day_opt -eq 1 ]]; then
+    qstats $(( 60 * 24 ))
+elif [[ $time_opt -gt 0 ]]; then
+    qstats $(( 60 * time_opt ))
+fi
+
+rm -f $tmpfile
