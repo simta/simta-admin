@@ -10,7 +10,10 @@
 ##	<MID> file pair from the simta spool and you want
 ##	a bigger picture of what the sender was doing.
 
-logfile=${logfile:-/var/log/mail}
+if [[ -z $logfile ]]; then
+    [[ -f /var/log/mail ]] && logfile=/var/log/mail
+    [[ -f /var/log/maillog ]] && logfile=/var/log/maillog
+fi
 
 ## In case we're handed an IP address as our search pattern, we
 ## need to exclude the parent process' logging the child creation,
