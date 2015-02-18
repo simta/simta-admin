@@ -23,6 +23,7 @@ These scripts are used by admins to deal with simta.
 %setup
 
 %install
+install -m 755 -d %{buildroot}%{_sbindir} %{buildroot}%{_bindir}
 install -m 755 simqclean %{buildroot}%{_sbindir}/simqclean
 install -m 755 simtamaint %{buildroot}%{_sbindir}/simtamaint
 install -m 755 simqc %{buildroot}%{_bindir}/simqc
