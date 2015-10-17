@@ -47,15 +47,13 @@ for p in "$@" ; do
     for q in slow fast; do
         find $simtadir/$q -ignore_readdir_race -maxdepth 1 -name D\* -type f | xargs -r cat 2>/dev/null | grep -q "$pattern"
         if [[ $? -eq 0 ]]; then
-            if [[ $q = 'fast' ]]; then
-                echo 'Stopping simta...'
-                if which systemctl &>/dev/null ; then
-                    systemctl stop simta
-                else
-                    /etc/init.d/simta stop
-                fi
-                state=stopped
+            echo 'Stopping simta...'
+            if which systemctl &>/dev/null ; then
+                systemctl stop simta
+            else
+                /etc/init.d/simta stop
             fi
+            state=stopped
             echo "Cleaning $q"
             find $simtadir/$q -ignore_readdir_race -maxdepth 1 -name D\* -type f | xargs -r egrep -l "$pattern" | sed -e 'p; s/D/E/;' | \
                     xargs -r -I spam mv spam "$savedir"
