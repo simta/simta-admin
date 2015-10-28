@@ -1,6 +1,6 @@
 Summary: Administrative scripts for simta
 Name: simta-admin
-Version: 1.2
+Version: 1.2.1
 Release: 1%{?dist}
 License: BSD
 Group: Applications/Internet

@@ -45,7 +45,7 @@ for p in "$@" ; do
     fi
 
     for q in slow fast; do
-        find $simtadir/$q -ignore_readdir_race -maxdepth 1 -name D\* -type f | xargs -r cat 2>/dev/null | grep -q "$pattern"
+        find $simtadir/$q -ignore_readdir_race -maxdepth 1 -name D\* -type f | xargs -r cat 2>/dev/null | egrep -q "$pattern"
         if [[ $? -eq 0 ]]; then
             echo 'Stopping simta...'
             if which systemctl &>/dev/null ; then
