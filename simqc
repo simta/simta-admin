@@ -18,6 +18,7 @@ ignore=umich.edu
 slow_opt=0
 fast_opt=0
 ip_opt=0
+authuser_opt=0
 head_opt=10
 day_opt=0
 time_opt=0
@@ -48,6 +49,13 @@ checkq(){
     echo "Top $queue senders"
     head -n $head_opt $stats/$queue.sortedfrom
     echo ""
+    if [[ $authuser_opt -eq 1 ]]; then
+        sed 's/E/D/' $stats/$queue.list | xargs -r fgrep -h Authuser > $stats/$queue.authusers
+        sort -n $stats/$queue.authusers | uniq -c | sort -rn > $stats/$queue.sortedauthusers
+        echo "Top $queue authusers"
+        head -n $head_opt $stats/$queue.sortedauthusers
+        echo ""
+    fi
     if [[ $ip_opt -eq 1 ]]; then
         sed 's/E/D/' $stats/$queue.list | xargs -r fgrep "Received: FROM" | grep -v "$ignore" | awk '{print $5}' | tr -d '[])' > $stats/$queue.ips
         sort -n $stats/$queue.ips | uniq -c | sort -rn > $stats/$queue.sortedips
@@ -93,12 +101,15 @@ fi
 }
 
 
-while getopts sfih:dt:n opt; do
+while getopts sfaih:dt:n opt; do
     case $opt in
     s)  slow_opt=1
 	;;
     f)	fast_opt=1
 	;;
+    a)
+        authuser_opt=1
+        ;;
     i)  ip_opt=1
         ;;
     h)	head_opt="$OPTARG"
