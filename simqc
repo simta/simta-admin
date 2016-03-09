@@ -84,8 +84,8 @@ if [[ -d $simtadir/etc ]]; then
     adqmax=$(awk 'END { print $2 }' $tmpfile)
     admed=$(( $(awk 'END { print NR }' $tmpfile) / 2 ))
     adqmed=$(awk -v m=$admed 'NR==m { print $2 }' $tmpfile)
-    
-    echo -e "$(( $minutes / 60 )) hour total queue stats" 
+
+    echo -e "$(( $minutes / 60 )) hour total queue stats"
     echo -e "max: $adqmax  min: $adqmin  avg: $adqavg  med: $adqmed"
 else
     error $simtadir/etc does not exist
@@ -122,7 +122,7 @@ if [[ $# -eq 0  ]] || [[ $slow_opt -eq 1 || $fast_opt -eq 1 ]]; then
     fi
     if [[ $fast_opt -eq 1 ]]; then
 	checkq fast
-    fi 
+    fi
     echo full stats in $stats
 fi
 
