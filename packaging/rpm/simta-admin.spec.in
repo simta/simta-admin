@@ -1,6 +1,6 @@
 Summary: Administrative scripts for simta
-Name: simta-admin
-Version: 1.2.1
+Name: @PACKAGE_NAME@
+Version: @PACKAGE_VERSION@
 Release: 1%{?dist}
 License: BSD
 Group: Applications/Internet
@@ -25,14 +25,13 @@ These scripts are used by admins to deal with simta.
 %prep
 %setup
 
+%build
+%configure
+
 %install
-install -m 0755 -d %{buildroot}%{_sbindir} %{buildroot}%{_bindir} %{buildroot}%{_sysconfdir}/cron.d
+make DESTDIR=%{buildroot} install
+install -m 0755 -d %{buildroot}%{_sysconfdir}/cron.d
 install -m 0644 40simta.cron %{buildroot}%{_sysconfdir}/cron.d/40simta
-install -m 0755 simqclean %{buildroot}%{_sbindir}/simqclean
-install -m 0755 simtamaint %{buildroot}%{_sbindir}/simtamaint
-install -m 0755 simqc %{buildroot}%{_bindir}/simqc
-install -m 0755 simqgrep %{buildroot}%{_bindir}/simqgrep
-install -m 0755 simtrans %{buildroot}%{_bindir}/simtrans
 
 %files
 %defattr(-,root,root,-)
