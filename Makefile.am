@@ -3,5 +3,5 @@ dist_sbin_SCRIPTS = simqclean simtamaint
 
 EXTRA_DIST = 40simta.cron packaging/rpm/simta-admin.spec
 
-rpm: dist-gzip
-	rpmbuild -ta $(distdir).tar.gz
+rpm: dist-xz
+	rpmbuild -ta $(distdir).tar.xz

@@ -3,7 +3,7 @@ Makefile
 Makefile.in
 aclocal.m4
 autom4te.cache/
-simta-admin-*.tar.gz
+simta-admin-*.tar.*
 config.log
 config.status
 configure

@@ -1,5 +1,5 @@
 AC_INIT(simta-admin, m4_esyscmd([sh version.sh]), junk@flowerysong.com)
-AM_INIT_AUTOMAKE([foreign])
+AM_INIT_AUTOMAKE([foreign no-dist-gzip dist-xz])
 
 AC_PROG_INSTALL
 
