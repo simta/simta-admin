@@ -16,13 +16,13 @@ if [[ -z $logfile ]]; then
 fi
 
 ## In case we're handed an IP address as our search pattern, we
-## need to exclude the parent process' logging the child creation,
+## need to exclude the parent process logging the child creation,
 ## as we don't want the transaction ID of the parent.  E.g.,
-## '7642.1293473885' is the parent tid and '605.1302669858' is the
+## '7642.1293473885' is the parent tid and '18540.1479841596' is the
 ## child tid here:
 #
-# simta[7642.1293473885]: Child Start 605.1302669858:
-# simta[7642.1293473885]: Child Exited 605.1302669858:
+# simta[7642.1293473885]: Child: launched smtp receive process 18540.1479841596 for 172.31.33.218
+# simta[7642.1293473885]: Child: smtp receive process 18540.1479841596 for 172.31.33.218 exited 0
 #
 ## Note that there are two lines containing 'Connect.stat' for
 ## each session, one from the child and one from the parent,
@@ -30,21 +30,21 @@ fi
 #
 # simta[7642.1293473885]: Connect.stat
 
-tmpfile=$(mktemp /tmp/.simtrans.XXXXXXXX)
+tmpfile=$(mktemp /tmp/simtrans.XXXXXXXX)
 grep="fgrep"
 cat="cat"
 
-if { echo $logfile | grep -q "gz$"; }; then
-    grep="zfgrep"
-    cat="zcat"
+if { echo $logfile | grep -q "xz$"; }; then
+    grep="xzfgrep"
+    cat="xzcat"
 fi
 
 for pattern in "$@" ; do
     $cat $logfile | awk -v p="$pattern" '
-	( $0 ~ p ) && ( $5 ~ /^simta\[.*\]:$/ ) &&
-	( $6 " " $7 !~ /Child (Start|Exited)/ ) &&
-	( $6  !~ /Connect\.stat/ ) {
-	    t=$5;
+	( $0 ~ p ) && ( $3 ~ /^simta\[.*\]:$/ ) &&
+	( $4 != "Child:" ) &&
+	( $4 !~ /Connect\.stat/ ) {
+	    t=$3;
 	    gsub(/simta\[|\]:/, "", t);
 	    tid[t]++;
 	}
@@ -56,6 +56,6 @@ done >| $tmpfile
 $grep -f $tmpfile $logfile
 rm -f $tmpfile
 
-## Instead of a straight fgrep, we might want consider
+## Instead of a straight fgrep, we might want to consider
 ## grepping for  "simta\[${tid}\]:" plus " ${tid}:? ".
 ## The fgrep has the possibility of false positives.

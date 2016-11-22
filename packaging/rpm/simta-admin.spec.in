@@ -12,7 +12,7 @@ Requires: coreutils
 Requires: findutils
 Requires: gawk
 Requires: grep
-Requires: gzip
+Requires: xz
 Requires: net-tools
 Requires: sed
 Requires: simta
