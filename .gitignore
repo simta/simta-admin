@@ -1,6 +1,7 @@
 .deps/
 Makefile
 Makefile.in
+VERSION
 aclocal.m4
 autom4te.cache/
 simta-admin-*.tar.*
