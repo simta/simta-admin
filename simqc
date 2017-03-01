@@ -50,7 +50,7 @@ checkq(){
     head -n $head_opt $stats/$queue.sortedfrom
     echo ""
     if [[ $authuser_opt -eq 1 ]]; then
-        sed 's/E/D/' $stats/$queue.list | xargs -r fgrep -h Authuser > $stats/$queue.authusers
+        sed 's/E/D/' $stats/$queue.list | xargs -r fgrep -h 'auth=pass smtp.auth=' | sed -e 's/.*=//' > $stats/$queue.authusers
         sort -n $stats/$queue.authusers | uniq -c | sort -rn > $stats/$queue.sortedauthusers
         echo "Top $queue authusers"
         head -n $head_opt $stats/$queue.sortedauthusers
