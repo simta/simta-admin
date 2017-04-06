@@ -11,6 +11,7 @@ while getopts c:q:w: opt; do
     w)  warn=$OPTARG
         ;;
     q)  queue=${base}/$OPTARG
+        simqcflag="-${OPTARG::1}"
         ;;
     esac
 done
@@ -22,6 +23,9 @@ fi
 
 qcount=$(find $queue -ignore_readdir_race -type f -name 'E*' 2>/dev/null | wc -l)
 echo "$qcount messages in $queue"
+echo
+simqc $simqcflag
+
 if [[ $qcount -gt $critical ]]; then
     exit 2
 elif [[ $qcount -gt $warn ]]; then

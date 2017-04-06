@@ -17,6 +17,7 @@ simtadir=/var/spool/simta
 ignore=umich.edu
 slow_opt=0
 fast_opt=0
+local_opt=0
 ip_opt=0
 authuser_opt=0
 head_opt=10
@@ -25,7 +26,7 @@ time_opt=0
 newest_opt=0
 
 usage() {
-    echo "Usage: $name [-sf] [-h num] [-d] [ -t hours ] | [-n]"
+    echo "Usage: $name [-sfl] [-h num] [-d] [ -t hours ] | [-n]"
     exit 1
 }
 
@@ -101,12 +102,14 @@ fi
 }
 
 
-while getopts sfaih:dt:n opt; do
+while getopts sflaih:dt:n opt; do
     case $opt in
     s)  slow_opt=1
 	;;
     f)	fast_opt=1
 	;;
+    l)  local_opt=1
+        ;;
     a)
         authuser_opt=1
         ;;
@@ -127,14 +130,16 @@ while getopts sfaih:dt:n opt; do
     esac
 done
 
-if [[ $# -eq 0  ]] || [[ $slow_opt -eq 1 || $fast_opt -eq 1 ]]; then
+if [[ $# -eq 0  ]] || [[ $slow_opt -eq 1 || $fast_opt -eq 1 || $local_opt -eq 1 ]]; then
     if [[ $slow_opt -eq 1 ]]; then
 	checkq slow
     fi
     if [[ $fast_opt -eq 1 ]]; then
 	checkq fast
     fi
-    echo full stats in $stats
+    if [[ $local_opt -eq 1 ]]; then
+        checkq local
+    fi
 fi
 
 if [[ $day_opt -eq 1 ]]; then
