@@ -2,7 +2,8 @@
 
 base=/var/spool/simta
 
-unowned=$(find $base -ignore_readdir_race -type f \! -user simta -print 2>/dev/null | wc -l)
+# find is slightly unreliable, so we do some ugliness and ting
+unowned=$(find $base -ignore_readdir_race -type f \! -user simta -print0 2>/dev/null | xargs -0 -r -Ifile find file -ignore_readdir_race \! -user simta 2>/dev/null | wc -l)
 if [[ $unowned -gt 0 ]]; then
     echo "$unowned files not owned by simta"
     exit 2
