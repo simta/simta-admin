@@ -11,8 +11,7 @@
 export PATH=/bin:/usr/bin:/sbin:/usr/sbin:/usr/local/sbin:/usr/rsug/bin
 
 name=simqc
-stats=$(mktemp -d /tmp/simtacount.XXXXXXXX)
-tmpfile=$(mktemp /tmp/${name}.XXXXXXXX)
+stats=$(mktemp -d /tmp/${name}.XXXXXXXX)
 simtadir=/var/spool/simta
 ignore=umich.edu
 slow_opt=0
@@ -87,12 +86,12 @@ minutes=$1
 if [[ -d $simtadir/etc ]]; then
     for x in $(find $simtadir/etc -ignore_readdir_race -name queue_schedule.\* -type f -mmin -${minutes}); do
         awk -v f=$x '{ s += $2 } END { print f,s }' $x
-    done | sort -n -k 2 > $tmpfile
-    adqavg=$(awk '{ s += $2 } END { print s/NR }' $tmpfile)
-    adqmin=$(awk 'NR==1 { print $2 }' $tmpfile)
-    adqmax=$(awk 'END { print $2 }' $tmpfile)
-    admed=$(( $(awk 'END { print NR }' $tmpfile) / 2 ))
-    adqmed=$(awk -v m=$admed 'NR==m { print $2 }' $tmpfile)
+    done | sort -n -k 2 > $stats/tmpfile
+    adqavg=$(awk '{ s += $2 } END { print s/NR }' $stats/tmpfile)
+    adqmin=$(awk 'NR==1 { print $2 }' $stats/tmpfile)
+    adqmax=$(awk 'END { print $2 }' $stats/tmpfile)
+    admed=$(( $(awk 'END { print NR }' $stats/tmpfile) / 2 ))
+    adqmed=$(awk -v m=$admed 'NR==m { print $2 }' $stats/tmpfile)
 
     echo -e "$(( $minutes / 60 )) hour total queue stats"
     echo -e "max: $adqmax  min: $adqmin  avg: $adqavg  med: $adqmed"
@@ -148,4 +147,4 @@ elif [[ $time_opt -gt 0 ]]; then
     qstats $(( 60 * time_opt ))
 fi
 
-rm -f $tmpfile
+rm -rf $stats
