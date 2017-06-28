@@ -17,6 +17,7 @@ ignore=umich.edu
 slow_opt=0
 fast_opt=0
 local_opt=0
+dead_opt=0
 ip_opt=0
 authuser_opt=0
 head_opt=10
@@ -25,7 +26,7 @@ time_opt=0
 newest_opt=0
 
 usage() {
-    echo "Usage: $name [-sfl] [-h num] [-d] [ -t hours ] | [-n]"
+    echo "Usage: $name [-sfld] [-h num] [-D] [ -t hours ] | [-n]"
     exit 1
 }
 
@@ -101,13 +102,15 @@ fi
 }
 
 
-while getopts sflaih:dt:n opt; do
+while getopts sflaih:dDt:n opt; do
     case $opt in
     s)  slow_opt=1
 	;;
     f)	fast_opt=1
 	;;
     l)  local_opt=1
+        ;;
+    d)  dead_opt=1
         ;;
     a)
         authuser_opt=1
@@ -116,7 +119,7 @@ while getopts sflaih:dt:n opt; do
         ;;
     h)	head_opt="$OPTARG"
 	;;
-    d)	day_opt=1
+    D)	day_opt=1
 	;;
     t)	time_opt="$OPTARG"
 	;;
@@ -129,7 +132,7 @@ while getopts sflaih:dt:n opt; do
     esac
 done
 
-if [[ $# -eq 0  ]] || [[ $slow_opt -eq 1 || $fast_opt -eq 1 || $local_opt -eq 1 ]]; then
+if [[ $# -eq 0  ]] || [[ $slow_opt -eq 1 || $fast_opt -eq 1 || $local_opt -eq 1 ]] || [[ $dead_opt -eq 1 ]]; then
     if [[ $slow_opt -eq 1 ]]; then
 	checkq slow
     fi
@@ -138,6 +141,9 @@ if [[ $# -eq 0  ]] || [[ $slow_opt -eq 1 || $fast_opt -eq 1 || $local_opt -eq 1 
     fi
     if [[ $local_opt -eq 1 ]]; then
         checkq local
+    fi
+    if [[ $dead_opt -eq 1 ]]; then
+        checkq dead
     fi
 fi
 
