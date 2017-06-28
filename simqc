@@ -58,7 +58,7 @@ checkq(){
         echo ""
     fi
     if [[ $ip_opt -eq 1 ]]; then
-        sed 's/E/D/' $stats/$queue.list | xargs -r fgrep "Received: FROM" | grep -v "$ignore" | awk '{print $5}' | tr -d '[])' > $stats/$queue.ips
+        sed 's/E/D/' $stats/$queue.list | xargs -r fgrep 'policy.iprev' | grep -v $ignore | sed -e 's/.*policy.iprev=//; s/ .*//' > $stats/$queue.ips
         sort -n $stats/$queue.ips | uniq -c | sort -rn > $stats/$queue.sortedips
         echo "Top $queue non-$ignore IPs"
         head -n $head_opt $stats/$queue.sortedips
