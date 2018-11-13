@@ -20,7 +20,7 @@ if [[ ! -d $queue ]]; then
     exit 3
 fi
 
-qcount=$(find $queue -ignore_readdir_race -type f -mmin +1 -name 'E*' 2>/dev/null | xargs grep -l '^J2$' | wc -l)
+qcount=$(find $queue -ignore_readdir_race -type f -name 'E*' 2>/dev/null | xargs grep -l '^J2$' | wc -l)
 echo "$qcount jailed messages in $queue"
 if [[ $qcount -gt $critical ]]; then
     exit 2
