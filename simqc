@@ -20,13 +20,14 @@ local_opt=0
 dead_opt=0
 ip_opt=0
 authuser_opt=0
+subject_opt=0
 head_opt=10
 day_opt=0
 time_opt=0
 newest_opt=0
 
 usage() {
-    echo "Usage: $name [-sfld] [-h num] [-D] [ -t hours ] | [-n]"
+    echo "Usage: $name [-sfldaiS] [-h num] [-D] [ -t hours ] | [-n]"
     exit 1
 }
 
@@ -63,9 +64,15 @@ checkq(){
         echo "Top $queue non-$ignore IPs"
         head -n $head_opt $stats/$queue.sortedips
         echo ""
-        cut -d. -f1-3 $stats/$queue.ips | sort -n | uniq -c | sort -rn > $stats/queue.sortedsubnets
+        cut -d. -f1-3 $stats/$queue.ips | sort -n | uniq -c | sort -rn > $stats/$queue.sortedsubnets
         echo "Top $queue non-$ignore subnets"
-        head -n $head_opt $stats/queue.sortedsubnets
+        head -n $head_opt $stats/$queue.sortedsubnets
+        echo ""
+    fi
+    if [[ $subject_opt -eq 1 ]]; then
+        sed 's/E/D/' $stats/$queue.list | xargs -r awk '/auth=pass smtp.auth=/{ auth=$NF } /^Subject:/{ print auth, $0} /^$/{ exit }' | sort -n | uniq -c | sort -rn > $stats/$queue.subjects
+        echo "Top $queue subjects"
+        head -n $head_opt $stats/$queue.subjects
         echo ""
     fi
 }
@@ -102,30 +109,31 @@ fi
 }
 
 
-while getopts sflaih:dDt:n opt; do
+while getopts adDfh:ilnsSt: opt; do
     case $opt in
-    s)  slow_opt=1
-	;;
-    f)	fast_opt=1
-	;;
-    l)  local_opt=1
+    a)  authuser_opt=1
         ;;
     d)  dead_opt=1
         ;;
-    a)
-        authuser_opt=1
-        ;;
-    i)  ip_opt=1
-        ;;
-    h)	head_opt="$OPTARG"
-	;;
     D)	day_opt=1
 	;;
-    t)	time_opt="$OPTARG"
+    f)	fast_opt=1
 	;;
+    h)	head_opt="$OPTARG"
+	;;
+    i)  ip_opt=1
+        ;;
+    l)  local_opt=1
+        ;;
     n)	newest_opt=1
 	findnewest
 	exit 0
+	;;
+    s)  slow_opt=1
+	;;
+    S)  subject_opt=1
+        ;;
+    t)	time_opt="$OPTARG"
 	;;
     *)  usage
 	;;
