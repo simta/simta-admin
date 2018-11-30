@@ -23,9 +23,9 @@ fi
 
 qcount=$(find $queue -ignore_readdir_race -type f -name 'E*' 2>/dev/null | xargs grep -l '^J2$' | wc -l)
 echo "$qcount jailed messages in $queue"
-if [[ $qcount -lt 0 ]]; then
-  echo
-  ./simqc $simqcflag -S -a
+if [[ $qcount -gt 0 ]]; then
+    echo
+    simqc $simqcflag -S -a
 fi
 if [[ $qcount -gt $critical ]]; then
     exit 2
