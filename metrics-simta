@@ -23,7 +23,7 @@ while getopts l:p:t: opt; do
 done
 
 
-socks=$(ss -na -o '( sport = :25 or sport = :465 or sport = :587 )' | awk 'NR > 2 { sockstate[$2]++ } BEGIN { ORS=" " } END { for (state in sockstate) print tolower(state) "=" sockstate[state]; }')
+socks=$(ss -na -o '( sport = :25 or sport = :465 or sport = :587 )' | awk 'NR > 2 { sockstate[$2]++ } BEGIN { ORS="," } END { for (state in sockstate) print tolower(state) "=" sockstate[state]; }')
 
 [[ $socks ]] && echo ${prefix}sockets${tags} ${socks%,} $ts
 
