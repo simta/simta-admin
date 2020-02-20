@@ -1,30 +1,40 @@
 #!/bin/bash
 
-prefix=$(hostname).
+prefix='simta_'
+tags=",simta_host=$(hostname)"
 ts=$(date +%s)
 qlimit=5
 
+# Tell simta to update the queue_schedule file
 simc -q &>/dev/null
 
-while getopts bl: opt; do
+while getopts l:p:t: opt; do
     case $opt in
-    b)
-        prefix=''
-        ;;
     l)
         qlimit=$OPTARG
+        ;;
+    p)
+        prefix=$OPTARG
+        ;;
+    t)
+        tags=$OPTARG
         ;;
     esac
 done
 
-ss -na -o '( sport = :25 or sport = :465 or sport = :587 )' | awk 'NR > 2 { sockstate[$2]++ } END{ for (state in sockstate) print tolower(state), sockstate[state]; }' | while read state count; do
-    echo ${prefix}simta.sockets.$state $count $ts
+
+socks=$(ss -na -o '( sport = :25 or sport = :465 or sport = :587 )' | awk 'NR > 2 { sockstate[$2]++ } BEGIN { ORS=" " } END { for (state in sockstate) print tolower(state) "=" sockstate[state]; }')
+
+[[ $socks ]] && echo ${prefix}sockets${tags} ${socks%,} $ts
+
+awk -v limit=$qlimit 'NR > 5 && $2 > limit { print $2, $3 }' /var/spool/simta/etc/queue_schedule  | while read count queue; do
+    echo ${prefix}host_queue,remote_host=${queue}${tags} messages=$count $ts
 done
 
-cat /var/spool/simta/etc/queue_schedule | awk -v limit=$qlimit 'NR > 5 && $2 > limit { gsub(/\./, "_", $3); print $2, $3 }' | while read count queue; do
-    echo ${prefix}simta.queue.host.$queue $count $ts
+queues=''
+for q in slow fast local dead; do
+    count=$(find /var/spool/simta/$q -ignore_readdir_race -type f -name 'E*' 2>/dev/null | wc -l)
+    queues="${queues}${q}=${count},"
 done
 
-for q in slow fast local; do
-    echo ${prefix}simta.queue.${q} $(find /var/spool/simta/$q -ignore_readdir_race -type f -name 'E*' 2>/dev/null | wc -l) $ts
-done
+echo ${prefix}queue${tags} ${queues%,} $ts
