@@ -3,9 +3,12 @@
 base=/var/spool/simta
 critical=1000
 warn=500
+age=5
 
-while getopts c:q:w: opt; do
+while getopts a:c:q:w: opt; do
     case $opt in
+    a)  age=$OPTARG
+        ;;
     c)  critical=$OPTARG
         ;;
     w)  warn=$OPTARG
@@ -21,7 +24,7 @@ if [[ ! -d $queue ]]; then
     exit 3
 fi
 
-qcount=$(find $queue -ignore_readdir_race -type f -name 'E*' 2>/dev/null | xargs grep -l '^J2$' | wc -l)
+qcount=$(find $queue -ignore_readdir_race -type f -name 'E*' -mmin +$age 2>/dev/null | xargs grep -l '^J2$' | wc -l)
 echo "$qcount jailed messages in $queue"
 if [[ $qcount -gt 0 ]]; then
     echo
