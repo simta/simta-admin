@@ -24,7 +24,7 @@ if [[ ! -d $queue ]]; then
     exit 3
 fi
 
-qcount=$(find $queue -ignore_readdir_race -type f -name 'D*' -mmin +$age 2>/dev/null | sed -e 's/D/E/;' | xargs grep -l '^J2$' | wc -l)
+qcount=$(find $queue -ignore_readdir_race -type f -name 'D*' -mmin +$age 2>/dev/null | sed -e 's/D/E/;' | xargs jq -r .jailed | grep 'true' | wc -l)
 echo "$qcount jailed messages in $queue"
 if [[ $qcount -gt 0 ]]; then
     echo

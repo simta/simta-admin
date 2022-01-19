@@ -39,15 +39,15 @@ error() {
 checkq(){
     queue=$1
     find $simtadir/$queue -maxdepth 1 -ignore_readdir_race -name E\* -type f > $stats/$queue.list
-    cat $stats/$queue.list | xargs grep -s -h ^R | sort | uniq -c | sort -rn > $stats/$queue.sortedrecip
+    cat $stats/$queue.list | xargs jq -r .recipients[] | sort | uniq -c | sort -rn > $stats/$queue.sortedrecip
     echo "Top $queue recipients"
     head -n $head_opt $stats/$queue.sortedrecip
     echo ""
-    cat $stats/$queue.list | xargs grep -s -h ^H | sort | uniq -c | sort -rn > $stats/$queue.sortedhosts
+    cat $stats/$queue.list | xargs jq -r .hostname | sort | uniq -c | sort -rn > $stats/$queue.sortedhosts
     echo "Top $queue hosts"
     head -n $head_opt $stats/$queue.sortedhosts
     echo ""
-    cat $stats/$queue.list | xargs cat 2>/dev/null | grep -h ^F  | sort | uniq -c | sort -rn > $stats/$queue.sortedfrom
+    cat $stats/$queue.list | xargs jq -r .sender | sort | uniq -c | sort -rn > $stats/$queue.sortedfrom
     echo "Top $queue senders"
     head -n $head_opt $stats/$queue.sortedfrom
     echo ""
@@ -77,18 +77,6 @@ checkq(){
     fi
 }
 
-findnewest() {
-    if [[ -f $simtadir/etc/queue_stats ]]; then
-	if [[ $(stat -c %Y $simtadir/etc/queue_stats) -lt $(( $(date +%s) - 1800)) ]]; then
-	    error $simtadir/etc/queue_stats is too old
-        else
-            echo $simtadir/etc/queue_stats
-	fi
-    else
-	error $simtadir/etc/queue_stats does not exist
-    fi
-}
-
 qstats() {
 minutes=$1
 if [[ -d $simtadir/etc ]]; then
@@ -109,7 +97,7 @@ fi
 }
 
 
-while getopts adDfh:ilnsSt: opt; do
+while getopts adDfh:ilsSt: opt; do
     case $opt in
     a)  authuser_opt=1
         ;;
@@ -125,10 +113,6 @@ while getopts adDfh:ilnsSt: opt; do
         ;;
     l)  local_opt=1
         ;;
-    n)	newest_opt=1
-	findnewest
-	exit 0
-	;;
     s)  slow_opt=1
 	;;
     S)  subject_opt=1

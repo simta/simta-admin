@@ -16,6 +16,7 @@ Requires: iproute
 Requires: sed
 Requires: simta
 Requires: util-linux
+Requires: jq
 BuildRequires: setup
 
 %description
@@ -39,7 +40,6 @@ install -m 0644 40simta.cron %{buildroot}%{_sysconfdir}/cron.d/40simta
 %{_sbindir}/simtamaint
 %{_bindir}/simqc
 %{_bindir}/simqgrep
-%{_bindir}/simtrans
 %{_libexecdir}/%{name}/check-simta-*
 %{_libexecdir}/%{name}/metrics-simta
 
