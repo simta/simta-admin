@@ -24,7 +24,8 @@ if [[ ! -d $queue ]]; then
     exit 3
 fi
 
-qcount=$(find $queue -ignore_readdir_race -type f -name 'D*' -mmin +$age 2>/dev/null | sed -e 's/D/E/;' | xargs jq -r .jailed 2>/dev/null | grep 'true' | wc -l)
+# `xargs cat` is used to avoid jq dying when a file has gone away
+qcount=$(find $queue -ignore_readdir_race -type f -name 'D*' -mmin +$age 2>/dev/null | sed -e 's/D/E/;' | xargs cat 2>/dev/null | jq -r .jailed | grep 'true' | wc -l)
 echo "$qcount jailed messages in $queue"
 if [[ $qcount -gt 0 ]]; then
     echo
