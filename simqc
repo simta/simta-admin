@@ -39,15 +39,15 @@ error() {
 checkq(){
     queue=$1
     find $simtadir/$queue -maxdepth 1 -ignore_readdir_race -name E\* -type f > $stats/$queue.list
-    cat $stats/$queue.list | xargs jq -r .recipients[] | sort | uniq -c | sort -rn > $stats/$queue.sortedrecip
+    cat $stats/$queue.list | xargs jq -r .recipients[] 2>/dev/null | sort | uniq -c | sort -rn > $stats/$queue.sortedrecip
     echo "Top $queue recipients"
     head -n $head_opt $stats/$queue.sortedrecip
     echo ""
-    cat $stats/$queue.list | xargs jq -r .hostname | sort | uniq -c | sort -rn > $stats/$queue.sortedhosts
+    cat $stats/$queue.list | xargs jq -r .hostname 2>/dev/null | sort | uniq -c | sort -rn > $stats/$queue.sortedhosts
     echo "Top $queue hosts"
     head -n $head_opt $stats/$queue.sortedhosts
     echo ""
-    cat $stats/$queue.list | xargs jq -r .sender | sort | uniq -c | sort -rn > $stats/$queue.sortedfrom
+    cat $stats/$queue.list | xargs jq -r .sender 2>/dev/null | sort | uniq -c | sort -rn > $stats/$queue.sortedfrom
     echo "Top $queue senders"
     head -n $head_opt $stats/$queue.sortedfrom
     echo ""
