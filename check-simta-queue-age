@@ -25,6 +25,8 @@ fi
 
 qcount=$(find $queue -ignore_readdir_race -type f -name 'D*' -mmin +$age 2>/dev/null | wc -l)
 echo "$qcount messages older than $age minutes in $queue"
+echo
+ls -lht $queue | tail
 if [[ $qcount -gt $critical ]]; then
     exit 2
 elif [[ $qcount -gt $warn ]]; then
