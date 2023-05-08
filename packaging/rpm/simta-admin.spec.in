@@ -1,3 +1,5 @@
+%global debug_package %{nil}
+
 Summary: Administrative scripts for simta
 Name: @PACKAGE_NAME@
 Version: @PACKAGE_VERSION@
